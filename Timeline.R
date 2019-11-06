@@ -1,16 +1,21 @@
+
 library(ggplot2)
 library(scales)
 library(lubridate)
 library(ggrepel)
 
-df <- read.csv("YourPathandFile")
+setwd("C:/YOURPATH")
+
+df <- read.csv("C:/YOURPATH/YOURFILE.csv")
+
+png("Timeline.png", width = 20, height = 20, units = 'in', res = 300)
 
 df$date <- with(df, ymd(sprintf('%04d%02d%02d', year, month, 1)))
 df <- df[with(df, order(date)), ]
 head(df)
 
 
-status_levels <- c("Aseados", "Regulado")
+status_levels <- c("ASEA", "Regulado")
 status_colors <- c("#0070C0", "#00B050")
 
 df$status <- factor(df$status, levels=status_levels, ordered=TRUE)
@@ -53,7 +58,7 @@ year_df <- data.frame(year_date_range, year_format)
 
 
 timeline_plot<-ggplot(df,aes(x=date,y=0, col=status, label=actividad))
-timeline_plot<-timeline_plot+labs(col="actividad")
+timeline_plot<-timeline_plot+labs(col="Actividad")
 timeline_plot<-timeline_plot+scale_color_manual(values=status_colors, labels=status_levels, drop = FALSE)
 timeline_plot<-timeline_plot+theme_classic()
 
@@ -62,7 +67,7 @@ timeline_plot<-timeline_plot+geom_hline(yintercept=0,
                                         color = "black", size=2)
 
 # Plot vertical segment lines for actividad
-timeline_plot<-timeline_plot+geom_segment(data=df[df$month_count == 1,], aes(y=position,yend=0,xend=date), color='black', size=0.4)
+timeline_plot<-timeline_plot+geom_segment(data=df[df$month_count == 1,], aes(y=position,yend=0,xend=date), color='black', size=1.5)
 
 # Plot scatter points at zero and date
 timeline_plot<-timeline_plot+geom_point(aes(y=0), size=10)
@@ -76,13 +81,17 @@ timeline_plot<-timeline_plot+theme(axis.line.y=element_blank(),
                                    axis.text.x =element_blank(),
                                    axis.ticks.x =element_blank(),
                                    axis.line.x =element_blank(),
-                                   legend.position = "bottom"
+                                   legend.position = "bottom",
+                                   legend.text = element_text(size=30, 
+                                                              face="bold")
 )
 
 # Show text for each month
-timeline_plot<-timeline_plot+geom_text(data=month_df, aes(x=month_date_range,y=-0.15,label=month_format),size=5,vjust=0.5, color='black', angle=90)
+timeline_plot<-timeline_plot+geom_text(data=month_df, aes(x=month_date_range,y=-0.15,label=month_format),size=8,vjust=0.5, color='black', angle=90)
 # Show year text
 timeline_plot<-timeline_plot+geom_text(data=year_df, aes(x=year_date_range,y=-0.35,label=year_format, fontface="bold"),size=6, color='black', angle=90)
 # Show text for each milestone
 timeline_plot<-timeline_plot+geom_text_repel(aes(y=(text_position*1.1),label=actividad),size=10,hjust=0)
 print(timeline_plot)
+
+dev.off()
